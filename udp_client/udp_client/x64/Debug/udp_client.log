@@ -1,0 +1,13 @@
+﻿  udp_client.cpp
+D:\LTM_2025\udp_client\udp_client\udp_client.cpp(35,36): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+udp_client.obj : error LNK2019: unresolved external symbol __imp_closesocket referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_htons referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_recvfrom referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_sendto referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_setsockopt referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_socket referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_WSAStartup referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_WSACleanup referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_WSAGetLastError referenced in function main
+udp_client.obj : error LNK2019: unresolved external symbol __imp_inet_pton referenced in function main
+D:\LTM_2025\udp_client\x64\Debug\udp_client.exe : fatal error LNK1120: 10 unresolved externals
