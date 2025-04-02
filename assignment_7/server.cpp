@@ -1,35 +1,38 @@
 #include <stdio.h>
-#include <sys/types.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <string.h>
 #include <stdlib.h>
-#include<WinSock2.h>
-#include<iostream>
-#include<string.h>
 
 typedef struct sockaddr SOCKADDR;
 typedef struct sockaddr_in SOCKADDR_IN;
-typedef struct in_addr IN_ADDR;
+typedef struct in_addr IN_ADDR; 
 typedef char* STRING;
 
-STRING listFiles[] =
+const char* listFiles[] = 
 {
-    "ltm1.c",
-    "ltm2.c",
-    "ltm3.c",
-    "ltm4.c",
-    "ltm5.c",
-    "ltm6.c",
-    "ltm7.c"
+    "test.txt",
+    "test2.txt", 
+    "test3.txt",
+    "test4.txt",
 };
-int listCount = 7;
+int listCount = sizeof(listFiles) / sizeof(listFiles[0]);
 
-char* GetServerIP()
+const char* GetServerIP()
 {
-    return "172.20.38.136\n";
+    return "127.0.0.1\n";
 }
 
 int main()
 {
-    int u = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    // Khởi tạo Winsock
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        printf("WSAStartup failed!\n");
+        return 1;
+    }
+
+    SOCKET u = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     SOCKADDR_IN uaddr, caddr;
     int clen;
     uaddr.sin_family = AF_INET;
@@ -39,7 +42,7 @@ int main()
     if (error == 0)
     {
         char buffer[1024] = { 0 };
-        while (0 == 0)
+        while (1)
         {
             memset(buffer, 0, sizeof(buffer));
             clen = sizeof(caddr);
@@ -51,21 +54,21 @@ int main()
                     buffer[strlen(buffer) - 1] = 0;
                 }
 
-                if (strcmp(buffer, "WHERE IS THE SERVER?") == 0)
+                if (strcmp(buffer,"WHERE IS THE SERVER?") == 0)
                 {
-                    char* serverIP = GetServerIP();
+                    const char* serverIP = GetServerIP();
                     sendto(u, serverIP, strlen(serverIP), 0, (SOCKADDR*)&caddr, sizeof(SOCKADDR));
                 }
-                if (strcmp(buffer, "WHAT FILE DO YOU HAVE?") == 0)
+                if (strcmp(buffer,"WHAT FILE DO YOU HAVE?") == 0)
                 {
                     memset(buffer, 0, sizeof(buffer));
-                    for (int i = 0; i < listCount; i++)
+                    for (int i = 0;i < listCount;i++)
                     {
                         sprintf(buffer + strlen(buffer), "%s\n", listFiles[i]);
                     }
                     sendto(u, buffer, strlen(buffer), 0, (SOCKADDR*)&caddr, sizeof(SOCKADDR));
                 }
-                if (strncmp(buffer, "GET ", 4) == 0)
+                if (strncmp(buffer,"GET ", 4) == 0)
                 {
                     char* filename = buffer + 4;
                     while (filename[strlen(filename) - 1] == '\r' || filename[strlen(filename) - 1] == '\n')
@@ -73,7 +76,7 @@ int main()
                         filename[strlen(filename) - 1] = 0;
                     }
                     char filepath[1024] = { 0 };
-                    sprintf(filepath, "/mnt/g/WSL/%s", filename);
+                    sprintf(filepath, "./%s", filename); 
                     FILE* f = fopen(filepath, "rb");
                     if (f == NULL)
                     {
@@ -81,7 +84,7 @@ int main()
                     }
                     else
                     {
-                        int s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+                        SOCKET s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
                         SOCKADDR_IN saddr;
                         saddr.sin_family = AF_INET;
                         saddr.sin_port = htons(8888);
@@ -93,11 +96,11 @@ int main()
                             sendto(u, "READY, PLEASE CONNECT", 21, 0, (SOCKADDR*)&caddr, sizeof(SOCKADDR));
                             SOCKADDR_IN tmpAddr;
                             int tmpLen = sizeof(tmpAddr);
-                            int c = accept(s, (SOCKADDR*)&tmpAddr, &tmpLen);
+                            SOCKET c = accept(s, (SOCKADDR*)&tmpAddr, &tmpLen);
 
                             fseek(f, 0, SEEK_END);
                             int flen = ftell(f);
-                            send(c, &flen, 4, 0);
+                            send(c, (char*)&flen, 4, 0);
                             fseek(f, 0, SEEK_SET);
                             int sent = 0;
                             while (sent < flen)
@@ -107,14 +110,14 @@ int main()
                                 sent += r;
                             }
                             fclose(f);
-                            close(c);
+                            closesocket(c);
                         }
                         else
                         {
                             sendto(u, "NOT AVAILABLE", 13, 0, (SOCKADDR*)&caddr, sizeof(SOCKADDR));
                             fclose(f);
                         }
-                        close(s);
+                        closesocket(s);
                     }
                 }
             }
@@ -123,7 +126,9 @@ int main()
     else
     {
         printf("Failed to bind!\n");
-        close(u);
+        closesocket(u);
     }
+
+    WSACleanup();
     return 0;
 }
