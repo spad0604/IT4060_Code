@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "iosfwd": "cpp",
+        "string": "cpp",
+        "ios": "cpp",
+        "type_traits": "cpp",
+        "xutility": "cpp"
+    }
+}
