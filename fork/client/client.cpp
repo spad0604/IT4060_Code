@@ -12,7 +12,8 @@
 #include<signal.h>
 
 const char* SERVER_IP = "127.0.0.1";
-const int SERVER_PORT = 5000;
+const int SERVER_BROADCAST_PORT = 6000;
+const int SERVER_LIST_PORT = 5000
 
 void broadcastName(const char* name) {
     int udpSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -24,7 +25,7 @@ void broadcastName(const char* name) {
     struct sockaddr_in serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(SERVER_PORT);
+    serverAddr.sin_port = htons(SERVER_BROADCAST_PORT);
     serverAddr.sin_addr.s_addr = inet_addr("255.255.255.255");
 
     //Gửi tên của client đến server
@@ -43,7 +44,7 @@ void requestList() {
         struct sockaddr_in serverAddr;
         memset(&serverAddr, 0, sizeof(serverAddr));
         serverAddr.sin_family = AF_INET;
-        serverAddr.sin_port = htons(SERVER_PORT);
+        serverAddr.sin_port = htons(SERVER_LIST_PORT);
         serverAddr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
         if(connect(tcpSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
